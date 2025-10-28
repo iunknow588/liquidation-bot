@@ -9,11 +9,16 @@ const getVersion = () => {
   const minor = process.env.NEXT_PUBLIC_VERSION_MINOR || '0';
   const patch = process.env.NEXT_PUBLIC_VERSION_PATCH || '0';
   const prefix = process.env.NEXT_PUBLIC_VERSION_PREFIX || 'v';
-  const updated = process.env.NEXT_PUBLIC_VERSION_UPDATED || '';
+  const commitTime = process.env.NEXT_PUBLIC_VERSION_COMMIT_TIME || '';
+  
+  // 版本号包含提交时间，例如: v1.0.0 (10-28 21:30)
+  const versionNumber = `${prefix}${major}.${minor}.${patch}`;
+  const fullVersion = commitTime ? `${versionNumber} (${commitTime})` : versionNumber;
   
   return {
-    full: `${prefix}${major}.${minor}.${patch}`,
-    updated: updated
+    full: fullVersion,
+    versionNumber: versionNumber,
+    commitTime: commitTime
   };
 };
 
@@ -81,11 +86,6 @@ export default function Dashboard() {
               <span className="flex items-center gap-1 text-green-600">
                 🔒 <span className="font-semibold">安全模式</span>
               </span>
-              {version.updated && (
-                <span className="flex items-center gap-1 text-gray-400">
-                  🕐 更新: <span className="font-mono text-xs">{version.updated}</span>
-                </span>
-              )}
             </div>
           )}
         </div>
