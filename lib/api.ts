@@ -6,6 +6,7 @@ export interface LiquidationOpportunity {
   dataSize: number;
   lamports: number;
   owner: string;
+  accountType?: string; // 新增：账户类型 (Obligation, Reserve, Market, etc.)
   collateralValue: number;
   borrowedValue: number;
   healthFactor: number;

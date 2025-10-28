@@ -3,6 +3,20 @@
 import { useState, useEffect } from 'react';
 import { scanSolendAccounts, LiquidationOpportunity, ScanResult, healthCheck } from '@/lib/api';
 
+// 获取版本信息
+const getVersion = () => {
+  const major = process.env.NEXT_PUBLIC_VERSION_MAJOR || '1';
+  const minor = process.env.NEXT_PUBLIC_VERSION_MINOR || '0';
+  const patch = process.env.NEXT_PUBLIC_VERSION_PATCH || '0';
+  const prefix = process.env.NEXT_PUBLIC_VERSION_PREFIX || 'v';
+  const updated = process.env.NEXT_PUBLIC_VERSION_UPDATED || '';
+  
+  return {
+    full: `${prefix}${major}.${minor}.${patch}`,
+    updated: updated
+  };
+};
+
 export default function Dashboard() {
   const [scanning, setScanning] = useState(false);
   const [data, setData] = useState<ScanResult | null>(null);
@@ -11,6 +25,8 @@ export default function Dashboard() {
     cluster: string;
     hasApiKey: boolean;
   } | null>(null);
+  
+  const version = getVersion();
 
   // 检查 API 状态
   useEffect(() => {
@@ -43,9 +59,14 @@ export default function Dashboard() {
       <div className="container mx-auto p-6 max-w-7xl">
         {/* 标题区域 */}
         <div className="mb-8">
-          <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            🚀 Solana 清算机器人
-          </h1>
+          <div className="flex items-center gap-4 mb-3">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              🚀 Solana 清算机器人
+            </h1>
+            <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-bold rounded-full shadow-lg">
+              {version.full}
+            </span>
+          </div>
           <p className="text-gray-600 text-lg">
             实时扫描 Solend 协议的清算机会
           </p>
@@ -60,6 +81,11 @@ export default function Dashboard() {
               <span className="flex items-center gap-1 text-green-600">
                 🔒 <span className="font-semibold">安全模式</span>
               </span>
+              {version.updated && (
+                <span className="flex items-center gap-1 text-gray-400">
+                  🕐 更新: <span className="font-mono text-xs">{version.updated}</span>
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -168,6 +194,7 @@ export default function Dashboard() {
                     <tr>
                       <th className="text-left p-4 font-semibold text-gray-700">#</th>
                       <th className="text-left p-4 font-semibold text-gray-700">账户地址</th>
+                      <th className="text-center p-4 font-semibold text-gray-700">类型</th>
                       <th className="text-right p-4 font-semibold text-gray-700">抵押品</th>
                       <th className="text-right p-4 font-semibold text-gray-700">借款</th>
                       <th className="text-right p-4 font-semibold text-gray-700">抵押率</th>
@@ -187,6 +214,17 @@ export default function Dashboard() {
                           <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
                             {acc.address.slice(0, 8)}...{acc.address.slice(-8)}
                           </code>
+                        </td>
+                        <td className="text-center p-4">
+                          <span className={`
+                            px-2 py-1 rounded-full text-xs font-bold
+                            ${acc.accountType === 'Obligation' ? 'bg-purple-100 text-purple-800' :
+                              acc.accountType === 'Reserve' ? 'bg-blue-100 text-blue-800' :
+                              acc.accountType === 'Market' ? 'bg-green-100 text-green-800' :
+                              'bg-gray-100 text-gray-800'}
+                          `}>
+                            {acc.accountType || 'Unknown'}
+                          </span>
                         </td>
                         <td className="text-right p-4 font-semibold text-gray-800">
                           ${acc.collateralValue.toFixed(2)}
