@@ -1,0 +1,75 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+.env.local
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# 🔒 敏感文档和脚本（不提交到 GitHub）
+# ============================================
+
+# 安全分析和敏感文档
+**/*安全*.md
+**/安全*.md
+安全*.md
+*密码*.md
+*password*.md
+*secret*.md
+
+# 部署脚本（包含敏感信息）
+**/*deploy*.sh
+**/deploy*.sh
+*部署*.sh
+**/*部署*.sh
+sync-config.sh
+verify-security.sh
+快速启动.sh
+
+# 配置同步说明（包含 API Key）
+**/*配置*.md
+**/配置*.md
+配置*.md
+
+# 项目总结文档（包含详细信息）
+项目总结.md
+部署*.md
+*集成*.md
+
+# Vercel 部署文件（自动生成）
+.vercel/
+vercel.json
+
+# 本地测试和临时文件
+*.local
+*.tmp
+*.log
+
