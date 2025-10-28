@@ -11,18 +11,33 @@ const SOLEND_PROGRAM_ID = new PublicKey(
 );
 
 // 获取 RPC 端点
-function getRpcEndpoint(): string {
+function getRpcEndpoint(): { url: string; provider: string } {
   if (HELIUS_API_KEY) {
+    // 使用 Helius（如果配置了 API Key）
     if (SOLANA_CLUSTER === 'devnet') {
-      return `https://devnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+      return {
+        url: `https://devnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
+        provider: 'Helius Devnet'
+      };
     }
-    return `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+    return {
+      url: `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
+      provider: 'Helius Mainnet'
+    };
   }
   
-  // 降级到标准 RPC
-  return SOLANA_CLUSTER === 'devnet'
-    ? 'https://api.devnet.solana.com'
-    : 'https://api.mainnet-beta.solana.com';
+  // 使用 Solana 公开节点（免费，无需 API Key）
+  if (SOLANA_CLUSTER === 'devnet') {
+    return {
+      url: 'https://api.devnet.solana.com',
+      provider: 'Solana 公开节点 (Devnet)'
+    };
+  }
+  
+  return {
+    url: 'https://api.mainnet-beta.solana.com',
+    provider: 'Solana 公开节点 (Mainnet)'
+  };
 }
 
 // 简单的限流（防止滥用）
@@ -71,10 +86,10 @@ export async function POST(request: NextRequest) {
     console.log(`[API] 扫描请求来自: ${ip}`);
     
     // 创建 Solana 连接
-    const rpcEndpoint = getRpcEndpoint();
-    const connection = new Connection(rpcEndpoint, 'confirmed');
+    const rpcConfig = getRpcEndpoint();
+    const connection = new Connection(rpcConfig.url, 'confirmed');
     
-    console.log(`[API] 使用 RPC: ${rpcEndpoint.split('?')[0]}`);
+    console.log(`[API] 使用 RPC: ${rpcConfig.provider}`);
     
     // 获取 Solend 账户
     const accounts = await connection.getProgramAccounts(
@@ -151,10 +166,14 @@ export async function POST(request: NextRequest) {
 
 // GET /api/scan (健康检查)
 export async function GET() {
+  const rpcConfig = getRpcEndpoint();
+  
   return NextResponse.json({
     status: 'ok',
     cluster: SOLANA_CLUSTER,
+    provider: rpcConfig.provider,
     hasApiKey: !!HELIUS_API_KEY,
+    usingPublicRpc: !HELIUS_API_KEY,
     timestamp: Date.now()
   });
 }
