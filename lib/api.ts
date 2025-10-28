@@ -22,6 +22,12 @@ export interface ScanResult {
   healthyCount: number;
   timestamp: number;
   cluster?: string;
+  rpcStatus?: {
+    connected: boolean;
+    currentSlot: number;
+    provider: string;
+    solendProgramId: string;
+  };
 }
 
 export interface ApiResponse<T> {

@@ -91,40 +91,38 @@ export async function POST(request: NextRequest) {
     
     console.log(`[API] 使用 RPC: ${rpcConfig.provider}`);
     
-    // 获取 Solend 账户
-    // 尝试多种过滤条件以获取更多数据
+    // 测试 RPC 连接
+    console.log(`[API] 测试 RPC 连接...`);
+    let rpcConnected = false;
+    let slotNumber = 0;
+    
+    try {
+      slotNumber = await connection.getSlot();
+      rpcConnected = true;
+      console.log(`[API] ✅ RPC 连接成功！当前 Slot: ${slotNumber}`);
+    } catch (error) {
+      console.error(`[API] ❌ RPC 连接失败:`, error);
+      throw new Error(`RPC 连接失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    }
+    
+    // 获取 Solend 账户 - 完全放宽条件
+    console.log(`[API] 开始查询 Solend 程序账户...`);
     let accounts = [];
     
     try {
-      // 尝试 1: 使用精确的 Obligation 大小
-      console.log(`[API] 尝试获取 Obligation 账户 (916 bytes)...`);
+      // 不使用任何过滤器，获取前 20 个账户（用于测试）
       accounts = await connection.getProgramAccounts(
         SOLEND_PROGRAM_ID,
         {
-          filters: [{ dataSize: 916 }],
-          commitment: 'confirmed'
+          commitment: 'confirmed',
+          dataSlice: { offset: 0, length: 0 } // 只获取账户元数据，不获取数据内容
         }
       );
-      console.log(`[API] 找到 ${accounts.length} 个 Obligation 账户`);
+      console.log(`[API] ✅ 成功获取 ${accounts.length} 个 Solend 账户`);
     } catch (error) {
-      console.warn(`[API] Obligation 查询失败:`, error);
-    }
-    
-    // 如果没找到账户，尝试获取所有账户（限制数量）
-    if (accounts.length === 0) {
-      try {
-        console.log(`[API] 尝试获取所有 Solend 账户...`);
-        accounts = await connection.getProgramAccounts(
-          SOLEND_PROGRAM_ID,
-          {
-            commitment: 'confirmed',
-            dataSlice: { offset: 0, length: 0 } // 只获取账户信息，不获取数据
-          }
-        );
-        console.log(`[API] 找到 ${accounts.length} 个总账户`);
-      } catch (error) {
-        console.warn(`[API] 全量查询失败:`, error);
-      }
+      console.error(`[API] ❌ Solend 账户查询失败:`, error);
+      // 继续执行，返回空数组
+      console.log(`[API] 将返回空结果`);
     }
     
     console.log(`[API] 最终获取到 ${accounts.length} 个账户`);
@@ -163,7 +161,7 @@ export async function POST(request: NextRequest) {
     const liquidatableCount = opportunities.filter(o => o.isLiquidatable).length;
     const healthyCount = opportunities.length - liquidatableCount;
     
-    // 返回结果
+    // 返回结果（包含连接状态）
     return NextResponse.json({
       success: true,
       data: {
@@ -172,7 +170,13 @@ export async function POST(request: NextRequest) {
         liquidatableCount,
         healthyCount,
         timestamp: Date.now(),
-        cluster: SOLANA_CLUSTER
+        cluster: SOLANA_CLUSTER,
+        rpcStatus: {
+          connected: rpcConnected,
+          currentSlot: slotNumber,
+          provider: rpcConfig.provider,
+          solendProgramId: SOLEND_PROGRAM_ID.toBase58()
+        }
       }
     });
     

@@ -99,6 +99,28 @@ export default function Dashboard() {
         {/* 数据展示 */}
         {data && (
           <>
+            {/* RPC 连接状态 */}
+            {data.rpcStatus && (
+              <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">✅</span>
+                  <h3 className="font-bold text-green-800">RPC 连接成功</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                  <div>
+                    <span className="font-semibold">📡 RPC 提供商:</span> {data.rpcStatus.provider}
+                  </div>
+                  <div>
+                    <span className="font-semibold">🔢 当前 Slot:</span> {data.rpcStatus.currentSlot.toLocaleString()}
+                  </div>
+                  <div className="col-span-2">
+                    <span className="font-semibold">📍 Solend 程序:</span>
+                    <code className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">{data.rpcStatus.solendProgramId}</code>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* 统计卡片 */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
               <StatsCard
