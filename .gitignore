@@ -64,9 +64,10 @@ verify-security.sh
 部署*.md
 *集成*.md
 
-# Vercel 部署文件（自动生成）
+# Vercel 部署目录（自动生成，不提交）
 .vercel/
-vercel.json
+
+# 注意: vercel.json 应该提交（项目配置文件）
 
 # 本地测试和临时文件
 *.local
