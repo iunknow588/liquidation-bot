@@ -92,17 +92,42 @@ export async function POST(request: NextRequest) {
     console.log(`[API] 使用 RPC: ${rpcConfig.provider}`);
     
     // 获取 Solend 账户
-    const accounts = await connection.getProgramAccounts(
-      SOLEND_PROGRAM_ID,
-      {
-        filters: [
-          { dataSize: 916 } // Solend Obligation 账户大小
-        ],
-        commitment: 'confirmed'
-      }
-    );
+    // 尝试多种过滤条件以获取更多数据
+    let accounts = [];
     
-    console.log(`[API] 获取到 ${accounts.length} 个账户`);
+    try {
+      // 尝试 1: 使用精确的 Obligation 大小
+      console.log(`[API] 尝试获取 Obligation 账户 (916 bytes)...`);
+      accounts = await connection.getProgramAccounts(
+        SOLEND_PROGRAM_ID,
+        {
+          filters: [{ dataSize: 916 }],
+          commitment: 'confirmed'
+        }
+      );
+      console.log(`[API] 找到 ${accounts.length} 个 Obligation 账户`);
+    } catch (error) {
+      console.warn(`[API] Obligation 查询失败:`, error);
+    }
+    
+    // 如果没找到账户，尝试获取所有账户（限制数量）
+    if (accounts.length === 0) {
+      try {
+        console.log(`[API] 尝试获取所有 Solend 账户...`);
+        accounts = await connection.getProgramAccounts(
+          SOLEND_PROGRAM_ID,
+          {
+            commitment: 'confirmed',
+            dataSlice: { offset: 0, length: 0 } // 只获取账户信息，不获取数据
+          }
+        );
+        console.log(`[API] 找到 ${accounts.length} 个总账户`);
+      } catch (error) {
+        console.warn(`[API] 全量查询失败:`, error);
+      }
+    }
+    
+    console.log(`[API] 最终获取到 ${accounts.length} 个账户`);
     
     // 处理账户数据
     const opportunities = accounts.map(({ pubkey, account }) => {
@@ -154,10 +179,18 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[API] 扫描失败:', error);
     
+    const errorMessage = error instanceof Error ? error.message : '未知错误';
+    
     return NextResponse.json(
       { 
+        success: false,
         error: '扫描失败', 
-        message: error instanceof Error ? error.message : '未知错误' 
+        message: errorMessage,
+        details: {
+          errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+          rpcProvider: getRpcEndpoint().provider,
+          solendProgramId: SOLEND_PROGRAM_ID.toBase58()
+        }
       },
       { status: 500 }
     );
