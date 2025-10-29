@@ -9,7 +9,11 @@ console.log('🔗 Solana 连接配置:');
 console.log('  集群:', config.cluster);
 console.log('  RPC:', RPC_ENDPOINT);
 
-export const connection = new Connection(RPC_ENDPOINT, 'confirmed');
+// 创建连接，设置更长的超时时间
+export const connection = new Connection(RPC_ENDPOINT, {
+  commitment: 'confirmed',
+  confirmTransactionInitialTimeout: 120000, // 120 秒
+});
 
 // 协议 Program ID
 export const SOLEND_PROGRAM_ID = new PublicKey(

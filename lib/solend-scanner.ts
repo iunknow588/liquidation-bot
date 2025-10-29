@@ -38,48 +38,89 @@ export interface ScanResult {
  * 扫描 Solend 账户
  * 完全在前端执行，直接连接 Solana RPC
  */
+/**
+ * 带重试的 getProgramAccounts
+ */
+async function getProgramAccountsWithRetry(
+  maxRetries: number = 3,
+  dataSize?: number
+): Promise<any[]> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 尝试 ${attempt}/${maxRetries}...`);
+      
+      const options: any = {
+        commitment: 'confirmed',
+      };
+      
+      if (dataSize) {
+        options.filters = [{ dataSize }];
+        console.log(`   过滤器: dataSize = ${dataSize}`);
+      }
+      
+      const accounts = await connection.getProgramAccounts(
+        SOLEND_PROGRAM_ID,
+        options
+      );
+      
+      console.log(`✅ 成功获取 ${accounts.length} 个账户`);
+      return accounts;
+      
+    } catch (error) {
+      console.error(`❌ 尝试 ${attempt} 失败:`, error);
+      if (attempt === maxRetries) {
+        throw error;
+      }
+      // 等待后重试
+      const waitTime = attempt * 2000; // 2s, 4s, 6s
+      console.log(`⏳ 等待 ${waitTime/1000}秒后重试...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+  return [];
+}
+
 export async function scanSolendAccounts(): Promise<ScanResult> {
-  console.log('🔍 开始扫描 Solend 账户...');
+  console.log('════════════════════════════════════════');
+  console.log('🔍 开始扫描 Solend 账户');
+  console.log('════════════════════════════════════════');
   console.log('📡 RPC 端点:', config.rpcEndpoint);
   console.log('🌐 集群:', config.cluster);
+  console.log('📍 Program ID:', SOLEND_PROGRAM_ID.toBase58());
+  console.log('');
   
   try {
     // 1. 测试 RPC 连接
-    console.log('📡 测试 RPC 连接...');
+    console.log('步骤 1: 测试 RPC 连接');
+    console.log('─────────────────────────────────────');
     const slot = await connection.getSlot();
-    console.log('✅ RPC 连接成功，当前 Slot:', slot);
+    console.log('✅ RPC 连接成功');
+    console.log(`   当前 Slot: ${slot}`);
+    console.log('');
     
     // 2. 获取 Solend 程序账户
-    console.log('🔍 查询 Solend 程序账户...');
-    console.log('📍 Program ID:', SOLEND_PROGRAM_ID.toBase58());
+    console.log('步骤 2: 查询 Solend 程序账户');
+    console.log('─────────────────────────────────────');
     
     // 策略 1: 先尝试查询 Obligation 账户 (916 bytes)
-    let accounts = await connection.getProgramAccounts(
-      SOLEND_PROGRAM_ID,
-      {
-        commitment: 'confirmed',
-        filters: [
-          { dataSize: 916 } // Solend Obligation 账户大小
-        ],
-      }
-    );
-    
-    console.log(`✅ 找到 ${accounts.length} 个 Obligation 账户`);
+    console.log('策略 1: 查询 Obligation 账户 (916 bytes)');
+    let accounts = await getProgramAccountsWithRetry(3, 916);
     
     // 如果没找到，尝试获取所有账户
     if (accounts.length === 0) {
-      console.log('⚠️ 未找到 Obligation 账户，尝试获取所有程序账户...');
-      accounts = await connection.getProgramAccounts(
-        SOLEND_PROGRAM_ID,
-        {
-          commitment: 'confirmed',
-        }
-      );
-      console.log(`✅ 找到 ${accounts.length} 个程序账户`);
+      console.log('');
+      console.log('⚠️  未找到 Obligation 账户');
+      console.log('策略 2: 获取所有程序账户（无过滤器）');
+      accounts = await getProgramAccountsWithRetry(3);
     }
     
+    console.log('');
+    console.log(`📊 查询结果: 找到 ${accounts.length} 个账户`);
+    console.log('');
+    
     // 3. 处理账户数据
-    console.log('📊 处理账户数据...');
+    console.log('步骤 3: 处理账户数据');
+    console.log('─────────────────────────────────────');
     const processedAccounts: AccountInfo[] = accounts.map(({ pubkey, account }, index) => {
       const dataSize = account.data.length;
       const lamports = account.lamports;
@@ -110,6 +151,16 @@ export async function scanSolendAccounts(): Promise<ScanResult> {
         ? (collateralValue - borrowedValue) * 0.05
         : 0;
       
+      // 打印前几个账户的信息（调试）
+      if (index < 3) {
+        console.log(`账户 ${index + 1}:`, {
+          address: pubkey.toBase58().substring(0, 8) + '...',
+          type: accountType,
+          lamports: lamports,
+          healthFactor: healthFactor.toFixed(2)
+        });
+      }
+      
       return {
         address: pubkey.toBase58(),
         dataSize,
@@ -132,9 +183,12 @@ export async function scanSolendAccounts(): Promise<ScanResult> {
     const liquidatableCount = processedAccounts.filter(a => a.isLiquidatable).length;
     const healthyCount = processedAccounts.length - liquidatableCount;
     
-    console.log(`✅ 扫描完成: ${processedAccounts.length} 个账户`);
-    console.log(`   - 可清算: ${liquidatableCount} 个`);
-    console.log(`   - 健康: ${healthyCount} 个`);
+    console.log('');
+    console.log('✅ 扫描完成');
+    console.log('─────────────────────────────────────');
+    console.log(`📊 总账户数: ${processedAccounts.length}`);
+    console.log(`🔴 可清算: ${liquidatableCount}`);
+    console.log(`🟢 健康: ${healthyCount}`);
     
     // 4. 确定 RPC 提供商
     let provider = 'Solana 公开节点';
@@ -158,7 +212,24 @@ export async function scanSolendAccounts(): Promise<ScanResult> {
     };
     
   } catch (error) {
-    console.error('❌ 扫描失败:', error);
+    console.error('');
+    console.error('❌ 扫描失败');
+    console.error('─────────────────────────────────────');
+    console.error('错误详情:', error);
+    
+    if (error instanceof Error) {
+      console.error('错误信息:', error.message);
+      console.error('错误堆栈:', error.stack);
+    }
+    
+    console.error('');
+    console.error('💡 可能的原因:');
+    console.error('   1. RPC 节点连接超时');
+    console.error('   2. 浏览器 CORS 策略限制');
+    console.error('   3. Solend Program ID 不正确');
+    console.error('   4. 网络问题');
+    console.error('════════════════════════════════════════');
+    
     throw new Error(
       error instanceof Error 
         ? `扫描失败: ${error.message}` 

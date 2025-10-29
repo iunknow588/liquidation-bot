@@ -1,8 +1,8 @@
 #!/bin/bash
-# 配置 Vercel 环境变量
+# 配置 Vercel 环境变量（前端可用）
 
 echo "════════════════════════════════════════════════════════"
-echo "🔧 Vercel 环境变量配置"
+echo "🔧 Vercel 环境变量配置（前端）"
 echo "════════════════════════════════════════════════════════"
 echo ""
 
@@ -33,11 +33,11 @@ if [ ! -f "$CONFIG_FILE" ]; then
 fi
 
 # 解析版本信息
-VERSION_MAJOR=$(grep -E "^major=" "$CONFIG_FILE" | cut -d '=' -f2)
-VERSION_MINOR=$(grep -E "^minor=" "$CONFIG_FILE" | cut -d '=' -f2)
-VERSION_PATCH=$(grep -E "^patch=" "$CONFIG_FILE" | cut -d '=' -f2)
-VERSION_PREFIX=$(grep -E "^prefix=" "$CONFIG_FILE" | cut -d '=' -f2)
-VERSION_COMMIT_TIME=$(grep -E "^commit_time=" "$CONFIG_FILE" | cut -d '=' -f2)
+VERSION_MAJOR=$(grep -E "^major=" "$CONFIG_FILE" | cut -d '=' -f2 | tr -d ' ')
+VERSION_MINOR=$(grep -E "^minor=" "$CONFIG_FILE" | cut -d '=' -f2 | tr -d ' ')
+VERSION_PATCH=$(grep -E "^patch=" "$CONFIG_FILE" | cut -d '=' -f2 | tr -d ' ')
+VERSION_PREFIX=$(grep -E "^prefix=" "$CONFIG_FILE" | cut -d '=' -f2 | tr -d ' ')
+VERSION_COMMIT_TIME=$(grep -E "^commit_time=" "$CONFIG_FILE" | cut -d '=' -f2 | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
 
 echo "📊 当前版本配置:"
 echo "  版本号: ${VERSION_PREFIX}${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
@@ -45,43 +45,79 @@ echo "  提交时间: ${VERSION_COMMIT_TIME}"
 echo ""
 
 # 解析 Solana 配置
-source "$CONFIG_FILE"
+SOLANA_CLUSTER=$(grep -E "^SOLANA_CLUSTER=" "$CONFIG_FILE" | cut -d '=' -f2 | tr -d ' ')
+SOLANA_MAINNET_RPC=$(grep -E "^SOLANA_MAINNET_RPC=" "$CONFIG_FILE" | cut -d '=' -f2 | tr -d ' ')
+SOLANA_DEVNET_RPC=$(grep -E "^SOLANA_DEVNET_RPC=" "$CONFIG_FILE" | cut -d '=' -f2 | tr -d ' ')
+SOLANA_TESTNET_RPC=$(grep -E "^SOLANA_TESTNET_RPC=" "$CONFIG_FILE" | cut -d '=' -f2 | tr -d ' ')
 
 echo "📡 Solana 配置:"
-echo "  集群: ${SOLANA_CLUSTER:-mainnet}"
+echo "  集群: ${SOLANA_CLUSTER:-devnet}"
+echo "  Mainnet RPC: ${SOLANA_MAINNET_RPC}"
+echo "  Devnet RPC: ${SOLANA_DEVNET_RPC}"
 echo ""
 
-# 设置环境变量
-echo "🔧 设置 Vercel 环境变量..."
+# Helius API Key
+HELIUS_API_KEY="08108945-f5b2-4aa4-8453-58e16774c9ba"
+
+# 设置环境变量（全部使用 NEXT_PUBLIC_ 前缀，前端可用）
+echo "🔧 设置 Vercel 环境变量（前端可用）..."
 echo ""
 
-# 版本信息（公开，前端可用）
-echo "设置版本信息..."
+# 版本信息
+echo "⚙️  配置版本信息..."
+vercel env rm NEXT_PUBLIC_VERSION_MAJOR production -y 2>/dev/null || true
 vercel env add NEXT_PUBLIC_VERSION_MAJOR production <<< "$VERSION_MAJOR"
+
+vercel env rm NEXT_PUBLIC_VERSION_MINOR production -y 2>/dev/null || true
 vercel env add NEXT_PUBLIC_VERSION_MINOR production <<< "$VERSION_MINOR"
+
+vercel env rm NEXT_PUBLIC_VERSION_PATCH production -y 2>/dev/null || true
 vercel env add NEXT_PUBLIC_VERSION_PATCH production <<< "$VERSION_PATCH"
+
+vercel env rm NEXT_PUBLIC_VERSION_PREFIX production -y 2>/dev/null || true
 vercel env add NEXT_PUBLIC_VERSION_PREFIX production <<< "$VERSION_PREFIX"
+
+vercel env rm NEXT_PUBLIC_VERSION_COMMIT_TIME production -y 2>/dev/null || true
 vercel env add NEXT_PUBLIC_VERSION_COMMIT_TIME production <<< "$VERSION_COMMIT_TIME"
 
-# Solana 配置（服务器端）
-echo "设置 Solana 配置..."
-vercel env add SOLANA_CLUSTER production <<< "${SOLANA_CLUSTER:-mainnet}"
-vercel env add SOLANA_MAINNET_RPC production <<< "$SOLANA_MAINNET_RPC"
-vercel env add SOLANA_DEVNET_RPC production <<< "$SOLANA_DEVNET_RPC"
-vercel env add SOLANA_TESTNET_RPC production <<< "$SOLANA_TESTNET_RPC"
+# Solana 配置
+echo "⚙️  配置 Solana 设置..."
+vercel env rm NEXT_PUBLIC_SOLANA_CLUSTER production -y 2>/dev/null || true
+vercel env add NEXT_PUBLIC_SOLANA_CLUSTER production <<< "${SOLANA_CLUSTER:-devnet}"
 
-# API Key（服务器端，私密）
-HELIUS_API_KEY="08108945-f5b2-4aa4-8453-58e16774c9ba"
-echo "设置 API Key..."
-vercel env add HELIUS_API_KEY production <<< "$HELIUS_API_KEY"
+vercel env rm NEXT_PUBLIC_SOLANA_MAINNET_RPC production -y 2>/dev/null || true
+vercel env add NEXT_PUBLIC_SOLANA_MAINNET_RPC production <<< "${SOLANA_MAINNET_RPC:-https://api.mainnet-beta.solana.com}"
+
+vercel env rm NEXT_PUBLIC_SOLANA_DEVNET_RPC production -y 2>/dev/null || true
+vercel env add NEXT_PUBLIC_SOLANA_DEVNET_RPC production <<< "${SOLANA_DEVNET_RPC:-https://api.devnet.solana.com}"
+
+vercel env rm NEXT_PUBLIC_SOLANA_TESTNET_RPC production -y 2>/dev/null || true
+vercel env add NEXT_PUBLIC_SOLANA_TESTNET_RPC production <<< "${SOLANA_TESTNET_RPC:-https://api.testnet.solana.com}"
+
+# Helius API Key
+echo "⚙️  配置 Helius API Key..."
+vercel env rm NEXT_PUBLIC_HELIUS_API_KEY production -y 2>/dev/null || true
+vercel env add NEXT_PUBLIC_HELIUS_API_KEY production <<< "$HELIUS_API_KEY"
 
 echo ""
 echo "✅ 环境变量配置完成！"
 echo ""
+echo "📊 已配置的变量（全部前端可用）:"
+echo "  • NEXT_PUBLIC_VERSION_MAJOR = $VERSION_MAJOR"
+echo "  • NEXT_PUBLIC_VERSION_MINOR = $VERSION_MINOR"
+echo "  • NEXT_PUBLIC_VERSION_PATCH = $VERSION_PATCH"
+echo "  • NEXT_PUBLIC_VERSION_PREFIX = $VERSION_PREFIX"
+echo "  • NEXT_PUBLIC_VERSION_COMMIT_TIME = $VERSION_COMMIT_TIME"
+echo "  • NEXT_PUBLIC_SOLANA_CLUSTER = ${SOLANA_CLUSTER:-devnet}"
+echo "  • NEXT_PUBLIC_SOLANA_MAINNET_RPC = ${SOLANA_MAINNET_RPC}"
+echo "  • NEXT_PUBLIC_SOLANA_DEVNET_RPC = ${SOLANA_DEVNET_RPC}"
+echo "  • NEXT_PUBLIC_SOLANA_TESTNET_RPC = ${SOLANA_TESTNET_RPC}"
+echo "  • NEXT_PUBLIC_HELIUS_API_KEY = [已设置]"
+echo ""
 echo "📝 下一步:"
-echo "  1. 运行 vercel --prod 重新部署"
-echo "  2. 访问 https://sbot.cdao.online/ 验证"
-echo "  3. 访问 https://sbot.cdao.online/debug 查看环境变量"
+echo "  1. 运行部署脚本: ./scripts/vercel-publish.sh"
+echo "  2. 或手动部署: vercel --prod"
+echo "  3. 访问 https://sbot.cdao.online/ 验证"
+echo "  4. 访问 https://sbot.cdao.online/debug 查看环境变量"
 echo ""
 echo "════════════════════════════════════════════════════════"
-
