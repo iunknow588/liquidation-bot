@@ -1,23 +1,23 @@
-// Solana RPC 配置
-// 配置源: solana-liquidation-bot/env/.info
-// 通过 sync-config.sh 同步到环境变量
+// ✅ 前端 RPC 配置
+// 所有配置都在前端使用，使用 NEXT_PUBLIC_ 前缀
 
 // 配置类型
 type ClusterType = 'mainnet' | 'testnet' | 'devnet';
 
-// 从环境变量读取配置（支持运行时切换）
+// RPC 端点配置
 const RPC_ENDPOINTS = {
   mainnet: process.env.NEXT_PUBLIC_SOLANA_MAINNET_RPC || 'https://api.mainnet-beta.solana.com',
   testnet: process.env.NEXT_PUBLIC_SOLANA_TESTNET_RPC || 'https://api.testnet.solana.com',
   devnet: process.env.NEXT_PUBLIC_SOLANA_DEVNET_RPC || 'https://api.devnet.solana.com',
 };
 
-// Helius API Key（从环境变量读取或使用默认值）
+// Helius API Key（前端直接使用，公开可见）
+// 注意：对于学习/测试项目，使用公开的 Solana 节点就够了
 const HELIUS_API_KEY = 
   process.env.NEXT_PUBLIC_HELIUS_API_KEY || 
-  '08108945-f5b2-4aa4-8453-58e16774c9ba';
+  '08108945-f5b2-4aa4-8453-58e16774c9ba'; // Demo Key
 
-// 当前使用的集群（从环境变量读取，默认 mainnet）
+// 当前使用的集群
 const CURRENT_CLUSTER: ClusterType = 
   (process.env.NEXT_PUBLIC_SOLANA_CLUSTER as ClusterType) || 'mainnet';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { scanSolendAccounts, LiquidationOpportunity, ScanResult, healthCheck } from '@/lib/api';
+import { scanSolendAccounts, healthCheck, type AccountInfo, type ScanResult } from '@/lib/solend-scanner';
 
 // 获取版本信息
 const getVersion = () => {
@@ -26,22 +26,24 @@ export default function Dashboard() {
   const [scanning, setScanning] = useState(false);
   const [data, setData] = useState<ScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [apiStatus, setApiStatus] = useState<{
+  const [rpcStatus, setRpcStatus] = useState<{
     cluster: string;
-    hasApiKey: boolean;
+    rpcEndpoint: string;
+    heliusApiKey: boolean;
   } | null>(null);
   
   const version = getVersion();
 
-  // 检查 API 状态
+  // 检查 RPC 状态
   useEffect(() => {
     healthCheck().then(status => {
-      setApiStatus({
+      setRpcStatus({
         cluster: status.cluster,
-        hasApiKey: status.hasApiKey
+        rpcEndpoint: status.rpcEndpoint,
+        heliusApiKey: status.heliusApiKey
       });
     }).catch(err => {
-      console.error('API 健康检查失败:', err);
+      console.error('RPC 健康检查失败:', err);
     });
   }, []);
 
@@ -73,18 +75,18 @@ export default function Dashboard() {
             </span>
           </div>
           <p className="text-gray-600 text-lg">
-            实时扫描 Solend 协议的清算机会
+            实时扫描 Solend 协议的清算机会（前端直连 RPC）
           </p>
-          {apiStatus && (
+          {rpcStatus && (
             <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
               <span className="flex items-center gap-1">
-                🌐 集群: <span className="font-semibold text-blue-600">{apiStatus.cluster.toUpperCase()}</span>
+                🌐 集群: <span className="font-semibold text-blue-600">{rpcStatus.cluster.toUpperCase()}</span>
               </span>
               <span className="flex items-center gap-1">
-                📡 RPC: <span className="font-mono text-xs">{apiStatus.hasApiKey ? 'Helius ✓' : 'Standard'}</span>
+                📡 RPC: <span className="font-mono text-xs">{rpcStatus.heliusApiKey ? 'Helius ✓' : 'Solana 公开节点'}</span>
               </span>
-              <span className="flex items-center gap-1 text-green-600">
-                🔒 <span className="font-semibold">安全模式</span>
+              <span className="flex items-center gap-1 text-blue-600">
+                ⚡ <span className="font-semibold">前端直连</span>
               </span>
             </div>
           )}
