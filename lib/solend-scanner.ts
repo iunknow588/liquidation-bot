@@ -44,7 +44,7 @@ export interface ScanResult {
 async function getProgramAccountsWithRetry(
   maxRetries: number = 3,
   dataSize?: number
-): Promise<any[]> {
+): Promise<Array<{ pubkey: import('@solana/web3.js').PublicKey; account: import('@solana/web3.js').AccountInfo<Buffer> }>> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`🔄 尝试 ${attempt}/${maxRetries}...`);
@@ -63,8 +63,8 @@ async function getProgramAccountsWithRetry(
         options
       );
       
-      console.log(`✅ 成功获取 ${accounts.length} 个账户`);
-      return accounts;
+      console.log(`✅ 成功获取 ${Array.isArray(accounts) ? accounts.length : 0} 个账户`);
+      return Array.isArray(accounts) ? accounts : [];
       
     } catch (error) {
       console.error(`❌ 尝试 ${attempt} 失败:`, error);
