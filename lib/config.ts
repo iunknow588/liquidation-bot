@@ -35,7 +35,15 @@ export function getRpcEndpoint(cluster?: ClusterType): string {
   }
   
   // 降级到标准 RPC
-  return RPC_ENDPOINTS[targetCluster];
+  const endpoint = RPC_ENDPOINTS[targetCluster];
+  
+  // 最终兜底：确保总是返回有效的 URL
+  if (!endpoint || endpoint === 'undefined') {
+    console.warn(`⚠️  RPC 端点无效，使用默认 devnet: ${endpoint}`);
+    return 'https://api.devnet.solana.com';
+  }
+  
+  return endpoint;
 }
 
 // 备用 RPC 列表
