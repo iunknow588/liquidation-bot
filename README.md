@@ -82,7 +82,7 @@ vercel --prod
 
 ### 环境变量
 
-创建 `.env.local` 文件（可选）:
+创建 `public.env` 文件（可选）:
 
 ```env
 NEXT_PUBLIC_HELIUS_API_KEY=your-api-key-here

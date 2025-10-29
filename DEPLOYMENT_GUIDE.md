@@ -85,7 +85,7 @@ vercel login
 
 ### 1. 环境变量配置
 
-创建 `.env.local` (不提交到 Git):
+创建 `public.env` (可安全上传到 Git):
 
 ```bash
 # 🔒 服务器端环境变量（不要用 NEXT_PUBLIC_）
@@ -99,7 +99,7 @@ SOLANA_CLUSTER=mainnet
 
 ```bash
 # 敏感文件
-.env.local
+public.env
 .env
 安全*.md
 *密码*.md
@@ -148,7 +148,7 @@ SOLANA_CLUSTER=mainnet
 
 检查:
 - ✅ 代码已上传
-- ✅ `.env.local` 不在仓库中
+- ✅ `public.env` 不在仓库中
 - ✅ 安全文档不在仓库中
 - ✅ 部署脚本不在仓库中
 
@@ -340,14 +340,14 @@ curl https://your-app.vercel.app/api/scan
 grep -r "08108945" .next/
 
 # 检查环境变量
-cat .env.local | grep NEXT_PUBLIC
+cat public.env | grep NEXT_PUBLIC
 ```
 
 #### 修复步骤
 
 1. 停止使用泄露的 API Key
 2. 在 Helius Dashboard 生成新的 API Key
-3. 更新 `.env.local`:
+3. 更新 `public.env`:
    ```bash
    # ✅ 正确（服务器端）
    HELIUS_API_KEY=new-api-key
@@ -368,7 +368,7 @@ cat .env.local | grep NEXT_PUBLIC
 
 ### 部署前
 
-- [ ] 环境变量已配置（`.env.local`）
+- [ ] 环境变量已配置（`public.env`）
 - [ ] 安全验证通过（`./verify-security.sh`）
 - [ ] `.gitignore` 正确配置
 - [ ] SSH 密钥已配置
@@ -425,7 +425,7 @@ git commit -m "📝 docs: 更新文档"
 
 ### 2. 环境管理
 
-- 开发: `.env.local`
+- 开发: `public.env`
 - 预览: Vercel Preview 环境变量
 - 生产: Vercel Production 环境变量
 

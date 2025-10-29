@@ -1,86 +1,220 @@
-# 🚀 Solana 清算机器人 - 部署脚本
+# Script Usage Guide
 
-本目录包含项目的自动化部署脚本。
+## Overview
 
----
+This directory contains all automation scripts for the Solana Liquidation Bot project, organized by functional domain to ensure only one effective script per domain.
 
-## 📁 脚本列表
+## Script List
 
-| 脚本 | 说明 | 用途 |
-|------|------|------|
-| `upload_to_github.sh` | GitHub 上传脚本 | 提交代码到 GitHub |
-| `deploy_to_vercel.sh` | Vercel 部署脚本 | 部署到 Vercel |
-| `full_deployment.sh` | 完整部署流程 | 一键部署 |
+| Script Name | Domain | Description | Use Case |
+|-------------|--------|-------------|----------|
+| `sync-config.sh` | Configuration | Sync backend config to frontend | Development setup |
+| `verify-security.sh` | Security | Verify project security | Pre-deployment check |
+| `setup-env.sh` | Environment | Configure Vercel environment variables | Production setup |
+| `upload-github.sh` | Code Management | Upload code to GitHub | Version control |
+| `deploy.sh` | Deployment | Deploy to Vercel | Application deployment |
+| `full-deploy.sh` | Complete Flow | Complete deployment process | One-click deployment |
 
----
+## 🔧 脚本详细说明
 
-## 🔧 使用方法
+### 1. 配置管理类
 
-### 1. GitHub 上传
+#### `sync-config.sh` - 配置同步脚本
 
+**功能**: 同步 Rust 后端的配置到 Next.js 前端
+
+**使用方法**:
 ```bash
 cd /home/lc/luckee_dao/solana-liquidation-dashboard
-./scripts/upload_to_github.sh
+./scripts/sync-config.sh
 ```
 
-**功能**:
-- ✅ 自动初始化 Git 仓库
-- ✅ 配置远程仓库
-- ✅ 验证敏感文件保护
-- ✅ 清理已追踪的敏感文件
-- ✅ 提交并推送到 GitHub
+**作用**:
+- 读取 `../solana-liquidation-bot/env/.info` 配置文件
+- 生成 `public.env` 公开配置文件
+- 同步版本信息和 RPC 配置
+
+**输出**:
+- 创建 `public.env` 文件
+- 显示当前配置信息
+- 提供下一步操作建议
+
+### 2. 安全验证类
+
+#### `verify-security.sh` - 安全验证脚本
+
+**功能**: 验证项目安全性，确保可以安全部署
+
+**使用方法**:
+```bash
+cd /home/lc/luckee_dao/solana-liquidation-dashboard
+./scripts/verify-security.sh
+```
+
+**检查项目**:
+- ✅ `public.env` 文件存在
+- ✅ 没有 `NEXT_PUBLIC_` 敏感变量
+- ✅ API Key 已配置（服务器端）
+- ✅ `.gitignore` 包含敏感文件
+- ✅ API Route 存在
+- ✅ 前端不直接使用 Solana Connection
+- ✅ 构建文件中无 API Key 泄露
+
+**输出**:
+- 通过/失败状态
+- 详细检查结果
+- 修复建议
+
+### 3. 环境配置类
+
+#### `setup-env.sh` - 环境变量配置脚本
+
+**功能**: 配置 Vercel 环境变量
+
+**使用方法**:
+```bash
+cd /home/lc/luckee_dao/solana-liquidation-dashboard
+./scripts/setup-env.sh
+```
+
+**配置内容**:
+- 版本信息（前端可见）
+- Solana 配置（前端可见）
+- API Key（服务器端，私密）
+
+**前置条件**:
+- 已安装 Vercel CLI
+- 已登录 Vercel 账号
+
+### 4. 代码管理类
+
+#### `upload-github.sh` - GitHub 上传脚本
+
+**功能**: 上传代码到 GitHub 仓库
+
+**使用方法**:
+```bash
+cd /home/lc/luckee_dao/solana-liquidation-dashboard
+./scripts/upload-github.sh
+```
 
 **安全特性**:
-- 🔒 自动排除 `.env.local`
-- 🔒 排除安全文档（`安全*.md`）
-- 🔒 排除部署脚本（`*deploy*.sh`）
-- 🔒 排除配置说明（`配置*.md`）
+- 自动排除敏感文件
+- 验证 `.gitignore` 配置
+- 清理已追踪的敏感文件
+- 检查 API Key 保护
 
-### 2. Vercel 部署
+**输出**:
+- 仓库信息
+- 安全状态
+- 下一步操作建议
 
+### 5. 部署管理类
+
+#### `deploy.sh` - Vercel 部署脚本
+
+**功能**: 部署应用到 Vercel
+
+**使用方法**:
 ```bash
 cd /home/lc/luckee_dao/solana-liquidation-dashboard
-./scripts/deploy_to_vercel.sh
+./scripts/deploy.sh
 ```
 
-**功能**:
-- ✅ 前置检查（Node.js、npm、Vercel CLI）
-- ✅ 安全验证
-- ✅ 依赖安装
-- ✅ 构建测试
-- ✅ 环境变量配置
-- ✅ 自动部署
-- ✅ 部署后验证
+**部署流程**:
+1. 前置检查（Node.js、npm、Vercel CLI）
+2. 安全验证
+3. 依赖安装
+4. 构建测试
+5. 环境变量准备
+6. Vercel 认证
+7. 选择部署环境
+8. 执行部署
+9. 部署后验证
 
 **部署选项**:
-1. **Preview 环境** - 测试部署
-2. **Production 环境** - 正式部署
+- Preview 环境（测试）
+- Production 环境（正式）
 
-### 3. 完整部署流程
+### 6. 完整流程类
 
+#### `full-deploy.sh` - 完整部署流程脚本
+
+**功能**: 一键完成完整部署流程
+
+**使用方法**:
 ```bash
 cd /home/lc/luckee_dao/solana-liquidation-dashboard
-./scripts/full_deployment.sh
+./scripts/full-deploy.sh
 ```
 
-**流程**:
-1. 上传到 GitHub
-2. 部署到 Vercel
-3. 保存部署信息
+**执行流程**:
+1. 安全验证
+2. GitHub 上传
+3. Vercel 部署
+4. 验证部署结果
 
----
+**特点**:
+- 自动化完整流程
+- 彩色输出界面
+- 详细进度显示
+- 错误处理和恢复
+
+## 🎯 使用场景
+
+### 开发环境设置
+
+```bash
+# 1. 同步配置
+./scripts/sync-config.sh
+
+# 2. 验证安全
+./scripts/verify-security.sh
+
+# 3. 启动开发服务器
+npm run dev
+```
+
+### 生产环境部署
+
+```bash
+# 方法 1: 完整部署流程（推荐）
+./scripts/full-deploy.sh
+
+# 方法 2: 分步部署
+./scripts/upload-github.sh
+./scripts/setup-env.sh
+./scripts/deploy.sh
+```
+
+### 环境变量配置
+
+```bash
+# 配置 Vercel 环境变量
+./scripts/setup-env.sh
+```
+
+### 安全验证
+
+```bash
+# 验证项目安全性
+./scripts/verify-security.sh
+```
 
 ## ⚙️ 配置要求
 
-### 环境变量
+### 环境依赖
 
-确保 `.env.local` 文件存在且包含：
+- **Node.js**: 18+ 版本
+- **npm**: 最新版本
+- **Vercel CLI**: 已安装并登录
+- **Git**: 已配置 SSH 密钥
 
-```bash
-# 🔒 服务器端环境变量（不要用 NEXT_PUBLIC_）
-HELIUS_API_KEY=your-api-key-here
-SOLANA_CLUSTER=mainnet
-```
+### 文件依赖
+
+- `../solana-liquidation-bot/env/.info` - 后端配置文件
+- `.gitignore` - Git 忽略规则
+- `package.json` - 项目配置
 
 ### 权限设置
 
@@ -89,148 +223,149 @@ SOLANA_CLUSTER=mainnet
 chmod +x scripts/*.sh
 ```
 
----
+## 🔒 安全注意事项
 
-## 🔒 安全检查
+### 1. 敏感文件保护
 
-### 上传前验证
+确保以下文件在 `.gitignore` 中：
+- `public.env` (公开配置文件)
+- `安全*.md`
+- `配置*.md`
+- `*deploy*.sh`
 
-脚本会自动检查以下内容：
+### 2. API Key 保护
 
-1. ✅ `.env.local` 在 `.gitignore` 中
-2. ✅ 安全文档未被追踪
-3. ✅ 部署脚本未被追踪
-4. ✅ API Key 未暴露
+- 不要使用 `NEXT_PUBLIC_` 前缀
+- 在 Vercel Dashboard 手动配置
+- 定期轮换 API Key
 
-### 部署前验证
+### 3. 部署前验证
 
-1. ✅ 运行 `verify-security.sh`
-2. ✅ 检查构建文件中无 API Key
-3. ✅ 验证环境变量配置
-4. ✅ 确认无 `NEXT_PUBLIC_` 敏感变量
-
----
-
-## 📊 部署信息
-
-部署完成后，信息会保存到：
-```
-/home/lc/luckee_dao/env/liquidation_bot_deployment_info.json
-```
-
-**内容包括**:
-- 部署类型（Preview/Production）
-- 部署时间
-- 部署 URL
-- 环境配置
-- 版本信息
-
----
+- 运行 `verify-security.sh`
+- 检查构建文件无泄露
+- 验证环境变量配置
 
 ## 🐛 故障排除
 
-### GitHub 上传失败
+### 常见问题
 
+#### 1. 权限错误
+```bash
+# 解决方案
+chmod +x scripts/*.sh
+```
+
+#### 2. Vercel 未登录
+```bash
+# 解决方案
+vercel login
+```
+
+#### 3. Git 配置错误
 ```bash
 # 检查 SSH 密钥
 ssh -T git@github.com
 
 # 检查远程仓库
 git remote -v
-
-# 手动推送
-git push -u origin main
 ```
 
-### Vercel 部署失败
-
+#### 4. 构建失败
 ```bash
-# 检查 Vercel 登录
-vercel whoami
+# 检查依赖
+npm install
 
-# 重新登录
-vercel login
-
-# 查看构建日志
+# 检查代码
 npm run build
 ```
 
-### API Key 泄露
+### 调试方法
 
+#### 1. 查看详细日志
 ```bash
-# 检查构建文件
-grep -r "your-api-key" .next/
+# 安全验证日志
+./scripts/verify-security.sh > security.log 2>&1
 
-# 验证环境变量
-cat .env.local | grep NEXT_PUBLIC
-
-# 重新生成 .env.local
-./sync-config.sh
+# 构建日志
+npm run build > build.log 2>&1
 ```
 
----
+#### 2. 检查环境变量
+```bash
+# 查看本地环境变量
+cat public.env
+
+# 查看 Vercel 环境变量
+vercel env ls
+```
+
+#### 3. 验证部署状态
+```bash
+# 查看 Vercel 部署
+vercel ls
+
+# 查看部署日志
+vercel logs
+```
 
 ## 📚 相关文档
 
-- [安全部署指南](../安全部署指南.md)
-- [配置同步说明](../配置同步说明.md)
-- [README](../README.md)
+- [项目文档](../docs/README.md)
+- [部署指南](../docs/deployment/vercel.md)
+- [环境配置](../docs/deployment/environment.md)
+- [安全指南](../docs/architecture/security.md)
+
+## 🔄 脚本维护
+
+### 更新脚本
+
+1. 修改脚本内容
+2. 测试脚本功能
+3. 更新文档说明
+4. 提交到 Git
+
+### 添加新脚本
+
+1. 确定功能领域
+2. 编写脚本代码
+3. 添加使用说明
+4. 更新 README.md
+
+### 删除废弃脚本
+
+1. 确认脚本已废弃
+2. 删除脚本文件
+3. 更新文档
+4. 提交更改
+
+## 🎉 最佳实践
+
+### 1. 脚本命名规范
+
+- 使用小写字母和连字符
+- 功能描述清晰
+- 避免重复命名
+
+### 2. 错误处理
+
+- 使用 `set -e` 遇到错误立即退出
+- 提供清晰的错误信息
+- 包含修复建议
+
+### 3. 用户友好
+
+- 彩色输出界面
+- 进度显示
+- 详细的操作说明
+
+### 4. 安全性
+
+- 验证敏感文件保护
+- 检查 API Key 泄露
+- 提供安全建议
 
 ---
 
-## 🎯 快速开始
-
-### 首次部署
-
-```bash
-# 1. 同步配置
-./sync-config.sh
-
-# 2. 验证安全
-./verify-security.sh
-
-# 3. 上传到 GitHub
-./scripts/upload_to_github.sh
-
-# 4. 部署到 Vercel
-./scripts/deploy_to_vercel.sh
-```
-
-### 后续更新
-
-```bash
-# 1. 提交更改
-./scripts/upload_to_github.sh
-
-# 2. 重新部署
-./scripts/deploy_to_vercel.sh
-```
-
----
-
-## ⚠️ 注意事项
-
-1. **不要提交敏感文件**
-   - `.env.local`
-   - 安全文档
-   - 部署脚本
-
-2. **环境变量配置**
-   - 不要使用 `NEXT_PUBLIC_` 前缀
-   - 在 Vercel Dashboard 手动配置
-
-3. **API Key 保护**
-   - 定期轮换 API Key
-   - 监控 API 使用量
-   - 启用 IP 限流
-
-4. **部署验证**
-   - 检查部署 URL
-   - 测试扫描功能
-   - 验证 API Key 不可见
-
----
-
-**创建时间**: 2025-10-28  
-**版本**: 1.0.0
-
+**文档版本**: v2.0.0  
+**最后更新**: 2025-01-29  
+**维护者**: 开发团队

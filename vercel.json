@@ -6,6 +6,14 @@
   "devCommand": "npm run dev",
   "github": {
     "silent": true
+  },
+  "functions": {
+    "app/api/liquidation/route.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NEXT_PUBLIC_RPC_ENDPOINT": "https://api.mainnet-beta.solana.com"
   }
 }
 

@@ -32,11 +32,16 @@ fi
 # 显示将被排除的文件
 echo -e "${YELLOW}🔒 安全检查：以下敏感文件将被排除${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  • .env.local (环境变量)"
+echo "  • .env.local (private environment variables)"
 echo "  • 安全*.md (安全文档)"
 echo "  • *deploy*.sh (部署脚本)"
 echo "  • 配置*.md (配置说明)"
 echo "  • .vercel/ (Vercel 配置)"
+echo ""
+echo -e "${GREEN}✅ 以下公开文件将被包含：${NC}"
+echo "  • public.env (公开配置文件)"
+echo "  • scripts/ (脚本目录)"
+echo "  • docs/ (文档目录)"
 echo ""
 
 # 确认是否继续
@@ -84,13 +89,10 @@ echo ""
 echo -e "${YELLOW}3️⃣ 验证敏感文件保护${NC}"
 
 SENSITIVE_FILES=(
-    ".env.local"
     "安全分析报告.md"
     "安全部署指南.md"
     "安全修复完成报告.md"
     "配置同步说明.md"
-    "sync-config.sh"
-    "verify-security.sh"
 )
 
 for file in "${SENSITIVE_FILES[@]}"; do
@@ -112,10 +114,10 @@ git rm --cached -r --ignore-unmatch \
     "安全*.md" \
     "*deploy*.sh" \
     "配置*.md" \
-    ".env.local" \
     ".vercel" \
     2>/dev/null || true
 echo -e "${GREEN}  ✅ 敏感文件已从 Git 缓存清除${NC}"
+echo -e "${GREEN}  ✅ public.env 将作为公开文件上传${NC}"
 echo ""
 
 # 5. 添加文件
@@ -205,7 +207,6 @@ echo ""
 echo -e "${GREEN}🚀 下一步:${NC}"
 echo "  1. 访问: https://github.com/iunknow588/liquidation-bot"
 echo "  2. 检查上传的文件"
-echo "  3. 运行部署脚本: ./scripts/deploy_to_vercel.sh"
+echo "  3. 运行部署脚本: ./scripts/deploy.sh"
 echo ""
 echo -e "${BLUE}════════════════════════════════════════════════════════${NC}"
-

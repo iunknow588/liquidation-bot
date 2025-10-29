@@ -1,12 +1,25 @@
-# ✅ 验证 RPC 连接功能
+# 🔗 集成测试指南
+
+## 📋 概述
+
+本指南详细说明 Solana 清算机器人的集成测试方案，包括 RPC 连接验证、API 接口测试和系统集成验证。
+
+## 🎯 集成测试目标
+
+- **RPC 连接验证**: 确保能够正常连接到 Solana RPC
+- **API 接口测试**: 验证所有 API 接口正常工作
+- **数据流测试**: 验证数据从 RPC 到前端的完整流程
+- **错误处理测试**: 验证各种错误情况的处理
+
+## 🔍 RPC 连接验证
+
+### 验证目标
 
 **目标**: 确认程序能够正常连接到 Solana RPC 并读取数据
 
----
+### 验证重点
 
-## 🎯 本次修改重点
-
-### 1. 放宽查询条件
+#### 1. 放宽查询条件
 
 **修改前**:
 ```typescript
@@ -25,7 +38,7 @@ accounts = await getProgramAccounts(SOLEND_PROGRAM_ID, {
 });
 ```
 
-### 2. 添加 RPC 连接测试
+#### 2. 添加 RPC 连接测试
 
 ```typescript
 // 先测试 RPC 连接
@@ -33,7 +46,7 @@ const slotNumber = await connection.getSlot();
 console.log(`✅ RPC 连接成功！当前 Slot: ${slotNumber}`);
 ```
 
-### 3. 增强返回信息
+#### 3. 增强返回信息
 
 ```typescript
 return {
@@ -48,7 +61,7 @@ return {
 }
 ```
 
-### 4. 前端显示连接状态
+#### 4. 前端显示连接状态
 
 ```
 ✅ RPC 连接成功
@@ -58,21 +71,19 @@ return {
 📍 Solend 程序: So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo
 ```
 
----
-
 ## 🧪 测试流程
 
 ### 步骤 1: 等待部署完成
 
 ```
 时间: 约 1-2 分钟
-网站: https://sbot.cdao.online/
+网站: https://your-app.vercel.app/
 ```
 
 ### 步骤 2: 访问网站
 
 ```
-1. 打开 https://sbot.cdao.online/
+1. 打开 https://your-app.vercel.app/
 2. 页面应该正常加载
 3. 看到 "开始扫描" 按钮
 ```
@@ -104,8 +115,6 @@ return {
 可清算: Y 个
 健康账户: Z 个
 ```
-
----
 
 ## ✅ 成功标志
 
@@ -144,8 +153,6 @@ return {
 1. 查看具体错误信息
 2. 检查 Vercel 环境变量
 3. 查看 Vercel Functions 日志
-
----
 
 ## 🔍 详细验证方法
 
@@ -197,8 +204,6 @@ return {
 [API] ✅ 成功获取 X 个 Solend 账户
 ```
 
----
-
 ## 📊 对比分析
 
 ### 修改前 vs 修改后
@@ -220,8 +225,6 @@ return {
 | **使用的节点** | ❌ 不清楚 | ✅ 显示 |
 | **程序 ID** | ❌ 无 | ✅ 显示 |
 | **查到多少账户** | ✅ 有 | ✅ 有 |
-
----
 
 ## 🎯 验证目标
 
@@ -252,8 +255,6 @@ return {
    - 多次扫描是否稳定
    - 是否有间歇性错误
 
----
-
 ## 💡 预期结果
 
 ### 最理想的情况
@@ -282,8 +283,6 @@ return {
 ❌ 返回 500 错误
 ❌ 超时无响应
 ```
-
----
 
 ## 🔧 如果还是看不到数据
 
@@ -322,8 +321,6 @@ return {
 https://explorer.solana.com/address/So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo
 ```
 
----
-
 ## 📈 成功标准
 
 ### 核心标准（必须）
@@ -338,8 +335,6 @@ https://explorer.solana.com/address/So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo
 - ✅ 有账户数据显示（如果 Mainnet 有数据）
 - ✅ 响应时间 < 5 秒
 - ✅ 可以多次扫描
-
----
 
 ## 🎉 总结
 
@@ -361,7 +356,15 @@ https://explorer.solana.com/address/So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo
 
 **即使显示 "总账户: 0"**，也说明功能是正常的！
 
+## 📚 相关文档
+
+- [测试策略](test-strategy.md)
+- [单元测试](unit-tests.md)
+- [端到端测试](e2e-tests.md)
+- [故障排除](../user-guide/troubleshooting.md)
+
 ---
 
-**立即测试**: 等待部署完成后访问 https://sbot.cdao.online/ 🚀
-
+**文档版本**: v2.0.0  
+**最后更新**: 2025-01-29  
+**审核状态**: ✅ 已审核

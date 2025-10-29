@@ -22,10 +22,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
+# local env files (private)
 .env*.local
 .env.local
 .env
+
+# public env files (can be uploaded)
+# public.env is intentionally NOT ignored - it contains only public configuration
 
 # vercel
 .vercel
